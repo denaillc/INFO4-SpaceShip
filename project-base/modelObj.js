@@ -2,7 +2,7 @@ var modelShader;
 
 function initModelShader() {
     modelShader = initShaders("model-vs","model-fs");
-    
+
     // active ce shader
     gl.useProgram(modelShader);
 
@@ -18,24 +18,24 @@ function Model(filename) {
     this.vertexBuffer = gl.createBuffer();
     this.vertexBuffer.itemSize = 0;
     this.vertexBuffer.numItems = 0;
-    
+
     this.normalBuffer = gl.createBuffer();
     this.normalBuffer.itemSize = 0;
     this.normalBuffer.numItems = 0;
-    
+
     this.bbmin = [0,0,0];
     this.bbmax = [0,0,0];
-    
+
     this.bbminP = [0,0,0,0];
     this.bbmaxP = [0,0,0,0];
     this.loaded = false;
-    
+
     this.load(filename);
 }
 
 Model.prototype.computeBoundingBox = function(vertices) {
     var i,j;
-    
+
     if(vertices.length>=3) {
 	this.bbmin = [vertices[0],vertices[1],vertices[2]];
 	this.bbmax = [vertices[0],vertices[1],vertices[2]];
@@ -59,7 +59,7 @@ Model.prototype.handleLoadedObject = function(objData) {
     var normals = objData[1];
 
     console.log("Nb vertices: " + vertices.length/3);
-    
+
     this.computeBoundingBox(vertices);
     console.log("BBox min: "+this.bbmin[0]+","+this.bbmin[1]+","+this.bbmin[2]);
     console.log("BBox max: "+this.bbmax[0]+","+this.bbmax[1]+","+this.bbmax[2]);
@@ -68,7 +68,7 @@ Model.prototype.handleLoadedObject = function(objData) {
 
     this.vao = gl.createVertexArray();
     gl.bindVertexArray(this.vao);
-    
+
     // cree un nouveau buffer sur le GPU et l'active
     this.vertexBuffer = gl.createBuffer();
     this.vertexBuffer.itemSize = 3;
@@ -86,8 +86,8 @@ Model.prototype.handleLoadedObject = function(objData) {
     gl.enableVertexAttribArray(1);
     gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
     gl.vertexAttribPointer(1, this.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    
-    
+
+
     gl.bindVertexArray(null);
 
     console.log("model initialized");
@@ -100,7 +100,11 @@ Model.prototype.initParameters = function() {
     this.modelMatrix = mat4.identity();
     this.viewMatrix = mat4.identity();
     this.projMatrix = mat4.identity();
-        
+
+    this.modelMatrix=mat4.scale(this.modelMatrix,[0.2,0.2,0.2]);
+    this.viewMatrix=mat4.lookAt([0,10,0],[0,0,0],[-1,0,0]);
+    this.projMatrix=mat4.perspective(45.0,1,0.1,100);
+
     // trouver les model/view/proj matrices pour voir l'objet comme vous le souhaitez
     this.modelMatrix = mat4.scale(this.modelMatrix, [0.2, 0.2, 0.2]);
     this.viewMatrix = mat4.lookAt([0, 10, 0], [0, 0, 0], [-1, 0, 0]);
@@ -112,9 +116,7 @@ Model.prototype.setParameters = function(elapsed) {
 }
 
 Model.prototype.move = function(x,y) {
-    // faire bouger votre vaisseau ici
-    // --> modifier currentTransform pour ca
-    
+    this.viewMatrix=mat4.translate(this.viewMatrix,[-0.1*x,0,-0.1*y]);
 }
 
 Model.prototype.setPosition = function(x,y) {
@@ -155,8 +157,8 @@ Model.prototype.sendUniformVariables = function() {
 	this.bbmaxP[1] /= this.bbmaxP[3];
 	this.bbmaxP[2] /= this.bbmaxP[3];
 	this.bbmaxP[3] /= this.bbmaxP[3];
-	
-	
+
+
     }
 }
 
@@ -168,7 +170,7 @@ Model.prototype.draw = function() {
     if(this.loaded) {
 	gl.bindVertexArray(this.vao);
 	gl.drawArrays(gl.TRIANGLES,0,this.vertexBuffer.numItems)
-	gl.bindVertexArray(null);	
+	gl.bindVertexArray(null);
     }
 }
 
@@ -184,22 +186,22 @@ Model.prototype.load = function(filename) {
     var vertices = null;
     var xmlhttp = new XMLHttpRequest();
     var instance = this;
-    
+
     xmlhttp.onreadystatechange = function() {
-	
+
         if (xmlhttp.readyState == XMLHttpRequest.DONE) {
-	    
+
             if (xmlhttp.status == 200) {
-		
+
                 var data = xmlhttp.responseText;
-		
+
                 var lines = data.split("\n");
-		
+
 		var positions = [];
 		var normals = [];
 		var arrayVertex = []
 		var arrayNormal = [];
- 
+
 		for ( var i = 0 ; i < lines.length ; i++ ) {
 		    var parts = lines[i].trimRight().split(' ');
 		    if ( parts.length > 0 ) {
@@ -226,7 +228,7 @@ Model.prototype.load = function(filename) {
 			    Array.prototype.push.apply(arrayVertex,positions[parseInt(f1[0])-1]);
 			    Array.prototype.push.apply(arrayVertex,positions[parseInt(f2[0])-1]);
 			    Array.prototype.push.apply(arrayVertex,positions[parseInt(f3[0])-1]);
-			    
+
 			    Array.prototype.push.apply(arrayNormal,normals[parseInt(f1[2])-1]);
 			    Array.prototype.push.apply(arrayNormal,normals[parseInt(f2[2])-1]);
 			    Array.prototype.push.apply(arrayNormal,normals[parseInt(f3[2])-1]);
@@ -242,13 +244,13 @@ Model.prototype.load = function(filename) {
 		    new Float32Array(arrayNormal)
 		]
 		instance.handleLoadedObject(objData);
-		
+
             }
         }
     };
-    
+
     console.log("Loading Model <" + filename + ">...");
-    
+
     xmlhttp.open("GET", filename, true);
     xmlhttp.send();
 }
