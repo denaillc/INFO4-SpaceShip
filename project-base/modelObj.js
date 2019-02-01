@@ -102,6 +102,9 @@ Model.prototype.initParameters = function() {
     this.projMatrix = mat4.identity();
         
     // trouver les model/view/proj matrices pour voir l'objet comme vous le souhaitez
+    this.modelMatrix = mat4.scale(this.modelMatrix, [0.2, 0.2, 0.2]);
+    this.viewMatrix = mat4.lookAt([0, 10, 0], [0, 0, 0], [-1, 0, 0]);
+    this.projMatrix = mat4.perspective(45.0, 1, 0.1, 30);
 }
 
 Model.prototype.setParameters = function(elapsed) {
