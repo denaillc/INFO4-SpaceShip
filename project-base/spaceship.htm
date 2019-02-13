@@ -11,9 +11,9 @@
     <script type="text/javascript" src="splat.js"></script>
 
     <script id="heightfield-vs" type="x-shader/x-vertex">#version 300 es
-      // *** le vertex shader *** 
-      layout(location=0) in vec3 aVertexPosition; // la position du sommet 
-      layout(location=1) in vec2 aVertexCoord; // sa coordonnee de texture 
+      // *** le vertex shader ***
+      layout(location=0) in vec3 aVertexPosition; // la position du sommet
+      layout(location=1) in vec2 aVertexCoord; // sa coordonnee de texture
 
       out vec2 vTextureCoord; // on souhaite rasteriser la coordonnee
 
@@ -38,7 +38,7 @@
     in vec2 vTextureCoord; // recuperation de la coord rasterisee
 
       out vec4 outColor;
-      
+
       float hash(vec2 p) {
 	  // pseudo random fonction
 	  float h = dot(mod(p,vec2(100.0)),vec2(127.1,311.7));
@@ -50,12 +50,12 @@
 	  // pris sur shadertoy
 	  vec2 i = floor(p);
 	  vec2 f = fract(p);
-	  
+
 	  vec2 u = f*f*(3.0-2.0*f);
 
-	  return mix( mix( hash( i + vec2(0.0,0.0) ), 
+	  return mix( mix( hash( i + vec2(0.0,0.0) ),
 			   hash( i + vec2(1.0,0.0) ), u.x),
-                      mix( hash( i + vec2(0.0,1.0) ), 
+                      mix( hash( i + vec2(0.0,1.0) ),
 			   hash( i + vec2(1.0,1.0) ), u.x), u.y);
       }
 
@@ -84,9 +84,9 @@
     </script>
 
     <script id="background-vs" type="x-shader/x-vertex">#version 300 es
-      // *** le vertex shader *** 
-      layout(location=0) in vec3 aVertexPosition; // la position du sommet 
-      layout(location=1) in vec2 aVertexCoord; // sa coordonnee de texture 
+      // *** le vertex shader ***
+      layout(location=0) in vec3 aVertexPosition; // la position du sommet
+      layout(location=1) in vec2 aVertexCoord; // sa coordonnee de texture
 
       out vec2 vTextureCoord; // on souhaite rasteriser la coordonnee
 
@@ -119,7 +119,7 @@
 	  float gx = 0.5*(xp-xm)*scale;
 	  float gy = 0.5*(yp-ym)*scale;
 
-	  vec3 v1 = normalize(vec3(1.0,0.0,gx));  
+	  vec3 v1 = normalize(vec3(1.0,0.0,gx));
 	  vec3 v2 = normalize(vec3(0.0,1.0,gy));
 
 	  return cross(v1,v2);
@@ -128,21 +128,21 @@
       void main(void) {
 	  float d = texture(uHeightfield,vTextureCoord).x;
 	  vec3 n = computeNormal();
-	  
+
 	  outColor = vec4(n,1.0);
 
       }
     </script>
 
     <script id="model-vs" type="x-shader/x-vertex">#version 300 es
-      // *** le vertex shader *** 
+      // *** le vertex shader ***
       layout(location=0) in vec3 aVertexPosition;
       layout(location=1) in vec3 aVertexNormal;
-      
+
       uniform mat4 uModelMatrix;
       uniform mat4 uViewMatrix;
       uniform mat4 uProjMatrix;
-      
+
       out vec3 vNormal;
 
       void main(void) {
@@ -155,30 +155,41 @@
     <script id="model-fs" type="x-shader/x-fragment">#version 300 es
       // *** le fragment shader ***
       precision mediump float; // precision des nombres flottant
-      
+
     in vec3 vNormal;
       out vec4 outColor;
 
       void main(void) {
+        vec3 n = normalize(vNormal);
+        vec3 l = normalize(vec3(0.,0.,4.));
+        vec3 r = reflect(l,n);
+        vec3 v = vec3(0.,0.,-1.);
+
+        vec3 Kd = vec3(1.,1.,0.);
+        vec3 Ks = vec3(1.);
+        float q = 50.;
+
+        float diff = max(dot(l,n),0.);
+        float spec = pow(max(dot(r,v),0.),q);
           // la couleur est attribuee au fragment courant
-	  vec3 n = normalize(vNormal);
-	  
-          outColor = vec4(n,1.);
+	      vec3 finalColor = Kd*diff + Ks*spec;
+
+          outColor = vec4(finalColor,1.);
       }
     </script>
 
     <script id="splat-vs" type="x-shader/x-vertex">#version 300 es
-      // *** le vertex shader *** 
-      layout(location=0) in vec3 aVertexPosition; // la position du sommet 
-      layout(location=1) in vec2 aVertexCoord; // sa coordonnee de texture 
-      
+      // *** le vertex shader ***
+      layout(location=0) in vec3 aVertexPosition; // la position du sommet
+      layout(location=1) in vec2 aVertexCoord; // sa coordonnee de texture
+
       uniform vec2 uPosition; // position du vaisseau
       out vec2 vTextureCoord; // on souhaite rasteriser la coordonnee
-      
+
       void main(void) {
 	  // projection de la position
 	  gl_Position = vec4(aVertexPosition+vec3(uPosition,0.0), 1.0);
-	  
+
 	  // stockage de la coordonnee de texture
 	  vTextureCoord = aVertexCoord;
       }
@@ -187,10 +198,10 @@
     <script id="splat-fs" type="x-shader/x-fragment">#version 300 es
       // *** le fragment shader ***
       precision highp float; // precision des nombres flottant
-      
+
     in vec2 vTextureCoord; // recuperation de la coord rasterisee
       out vec4 outColor;
-      
+
       void main(void) {
 	  float alpha = 1.-smoothstep(0.2,0.25,distance(vec2(.5),vTextureCoord));
 	  outColor = vec4(alpha*vec3(1,0,0),alpha);
@@ -203,39 +214,39 @@
       var background;
       var spaceship;
       var shootSample;
-      
+
       function drawScene() {
 	  // initialisation du viewport
 	  gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-	  
+
 	  // efface les buffers de couleur et de profondeur
 	  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	  // A DECOMMENTER POUR TRAVAILLER SUR LE FOND 
+	  // A DECOMMENTER POUR TRAVAILLER SUR LE FOND
 	  // // creation des hauteurs dans une texture
 	  // gl.bindFramebuffer(gl.FRAMEBUFFER,fbo.id());
-	  
+
 	  // gl.useProgram(heightfield.shader());
 	  // heightfield.sendUniformVariables();
 	  // heightfield.draw();
-	  
+
 	  // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	  
+
 	  // gl.useProgram(background.shader());
 	  // background.sendUniformVariables();
 	  // background.draw();
-	  
+
 	  gl.useProgram(spaceship.shader());
 	  spaceship.sendUniformVariables();
 	  spaceship.draw();
 
-	  // test pour afficher un splat quand on appuie sur espace 
-	  // activation de la transparence 
-	  gl.enable(gl.BLEND); 
+	  // test pour afficher un splat quand on appuie sur espace
+	  // activation de la transparence
+	  gl.enable(gl.BLEND);
 	  gl.useProgram(shootSample.shader());
 	  shootSample.sendUniformVariables();
 	  shootSample.draw();
-	  // on desactive la transparence 
+	  // on desactive la transparence
 	  gl.disable(gl.BLEND);
       }
 
@@ -254,11 +265,11 @@
       function handleKeys() {
           if (currentlyPressedKeys[33]) {
               // Page Up (par exemple)
-              // faire quelque chose... 
+              // faire quelque chose...
           }
 
 	  // vous pouvez utiliser ce genre de fonction
-	  // pour faire bouger votre vaisseau 
+	  // pour faire bouger votre vaisseau
 	  if (currentlyPressedKeys[68]) { // D
               spaceship.move(0,1);
           }
@@ -276,31 +287,31 @@
           }
 
 	  if (currentlyPressedKeys[77]) { // M
-	      // just a test to clear a splat 
+	      // just a test to clear a splat
               shootSample.clear();
           }
 
 	  if (currentlyPressedKeys[32]) { // SPACE
-	      // just to test how a aplat works 
+	      // just to test how a aplat works
 	      shootSample.setPosition(0,0);
           }
-	  
+
       }
 
       function mouseMove(event) {
-	  // recup evenement souris 
+	  // recup evenement souris
           //var newx = 2.0*(event.clientX/gl.viewportWidth)-1.0;
           //var newy = -(2.0*(event.clientY/gl.viewportHeight)-1.0);
       }
 
 
-      // animation 
+      // animation
       var lastTime = 0;
       function animate() {
           var timeNow = new Date().getTime();
           if (lastTime != 0) {
               // anime chacun des objets de la scene
-	      // si necessaire (en fonction du temps ecoulé)
+	      // si necessaire (en fonction du temps ecoulï¿½)
               var elapsed = timeNow - lastTime;
               heightfield.setParameters(elapsed);
               spaceship.setParameters(elapsed);
@@ -330,23 +341,23 @@
           initBackgroundShader();
           initModelShader();
 	  initSplatShader();
-	  
+
           heightfield = new Heightfield();
           background = new Background(fbo.texture(0));
           spaceship = new Model('models/plane.obj');
 	  shootSample = new Splat(0);
-	  
+
           // la couleur de fond sera noire
           gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
-          // active le teste de profondeur 
+          // active le teste de profondeur
           gl.enable(gl.DEPTH_TEST);
           gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
           /* Mouse and keyboard interaction functions */
           //canvas.addEventListener('mousedown', tbMouseDown, true);
           //canvas.addEventListener('mousemove', mouseMove, true);
-          //canvas.addEventListener('mouseup', tbMouseUp, true);    
+          //canvas.addEventListener('mouseup', tbMouseUp, true);
           document.onkeydown = handleKeyDown;
           document.onkeyup = handleKeyUp;
 
