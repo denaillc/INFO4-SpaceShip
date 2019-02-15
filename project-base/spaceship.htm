@@ -1,16 +1,18 @@
-<html><head>
-    <title>SpaceShip</title>
-    <meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<html>
 
-    <script type="text/javascript" src="gl-matrix.js"></script>
-    <script type="text/javascript" src="game-utils.js"></script>
-    <script type="text/javascript" src="fbo.js"></script>
-    <script type="text/javascript" src="heightfield.js"></script>
-    <script type="text/javascript" src="background.js"></script>
-    <script type="text/javascript" src="modelObj.js"></script>
-    <script type="text/javascript" src="splat.js"></script>
+<head>
+  <title>SpaceShip</title>
+  <meta http-equiv="content-type" content="text/html; charset=windows-1252">
 
-    <script id="heightfield-vs" type="x-shader/x-vertex">#version 300 es
+  <script type="text/javascript" src="gl-matrix.js"></script>
+  <script type="text/javascript" src="game-utils.js"></script>
+  <script type="text/javascript" src="fbo.js"></script>
+  <script type="text/javascript" src="heightfield.js"></script>
+  <script type="text/javascript" src="background.js"></script>
+  <script type="text/javascript" src="modelObj.js"></script>
+  <script type="text/javascript" src="splat.js"></script>
+
+  <script id="heightfield-vs" type="x-shader/x-vertex">#version 300 es
       // *** le vertex shader ***
       layout(location=0) in vec3 aVertexPosition; // la position du sommet
       layout(location=1) in vec2 aVertexCoord; // sa coordonnee de texture
@@ -26,7 +28,7 @@
       }
     </script>
 
-    <script id="heightfield-fs" type="x-shader/x-fragment">#version 300 es
+  <script id="heightfield-fs" type="x-shader/x-fragment">#version 300 es
       // *** le fragment shader ***
       precision highp float; // precision des nombres flottant
 
@@ -83,7 +85,7 @@
       }
     </script>
 
-    <script id="background-vs" type="x-shader/x-vertex">#version 300 es
+  <script id="background-vs" type="x-shader/x-vertex">#version 300 es
       // *** le vertex shader ***
       layout(location=0) in vec3 aVertexPosition; // la position du sommet
       layout(location=1) in vec2 aVertexCoord; // sa coordonnee de texture
@@ -99,7 +101,7 @@
       }
     </script>
 
-    <script id="background-fs" type="x-shader/x-fragment">#version 300 es
+  <script id="background-fs" type="x-shader/x-fragment">#version 300 es
       // *** le fragment shader ***
       precision highp float; // precision des nombres flottant
 
@@ -134,7 +136,7 @@
       }
     </script>
 
-    <script id="model-vs" type="x-shader/x-vertex">#version 300 es
+  <script id="model-vs" type="x-shader/x-vertex">#version 300 es
       // *** le vertex shader ***
       layout(location=0) in vec3 aVertexPosition;
       layout(location=1) in vec3 aVertexNormal;
@@ -152,7 +154,7 @@
       }
     </script>
 
-    <script id="model-fs" type="x-shader/x-fragment">#version 300 es
+  <script id="model-fs" type="x-shader/x-fragment">#version 300 es
       // *** le fragment shader ***
       precision mediump float; // precision des nombres flottant
 
@@ -161,7 +163,7 @@
 
       void main(void) {
         vec3 n = normalize(vNormal);
-        vec3 l = normalize(vec3(0.,0.,4.));
+        vec3 l = normalize(vec3(0.,1.,1.));
         vec3 r = reflect(l,n);
         vec3 v = vec3(0.,0.,-1.);
 
@@ -178,7 +180,7 @@
       }
     </script>
 
-    <script id="splat-vs" type="x-shader/x-vertex">#version 300 es
+  <script id="splat-vs" type="x-shader/x-vertex">#version 300 es
       // *** le vertex shader ***
       layout(location=0) in vec3 aVertexPosition; // la position du sommet
       layout(location=1) in vec2 aVertexCoord; // sa coordonnee de texture
@@ -195,183 +197,200 @@
       }
     </script>
 
-    <script id="splat-fs" type="x-shader/x-fragment">#version 300 es
+  <script id="splat-fs" type="x-shader/x-fragment">#version 300 es
       // *** le fragment shader ***
       precision highp float; // precision des nombres flottant
+
+      uniform sampler2D uTex;
 
     in vec2 vTextureCoord; // recuperation de la coord rasterisee
       out vec4 outColor;
 
       void main(void) {
-	  float alpha = 1.-smoothstep(0.2,0.25,distance(vec2(.5),vTextureCoord));
-	  outColor = vec4(alpha*vec3(1,0,0),alpha);
+        outColor = texture(uTex,vTextureCoord);
+	  //float alpha = 1.-smoothstep(0.2,0.25,distance(vec2(.5),vTextureCoord));
+	  //outColor = vec4(alpha*vec3(1,0,0),alpha);
       }
     </script>
 
-    <script type="text/javascript">
-      var fbo;
-      var heightfield;
-      var background;
-      var spaceship;
-      var shootSample;
+  <script type="text/javascript">
+    var fbo;
+    var heightfield;
+    var background;
+    var spaceship;
+    var shootSample;
+    var cube;
 
-      function drawScene() {
-	  // initialisation du viewport
-	  gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+    function drawScene() {
+      // initialisation du viewport
+      gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 
-	  // efface les buffers de couleur et de profondeur
-	  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      // efface les buffers de couleur et de profondeur
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	  // A DECOMMENTER POUR TRAVAILLER SUR LE FOND
-	  // // creation des hauteurs dans une texture
-	  // gl.bindFramebuffer(gl.FRAMEBUFFER,fbo.id());
+      // A DECOMMENTER POUR TRAVAILLER SUR LE FOND
+      // // creation des hauteurs dans une texture
+      // gl.bindFramebuffer(gl.FRAMEBUFFER,fbo.id());
 
-	  // gl.useProgram(heightfield.shader());
-	  // heightfield.sendUniformVariables();
-	  // heightfield.draw();
+      // gl.useProgram(heightfield.shader());
+      // heightfield.sendUniformVariables();
+      // heightfield.draw();
 
-	  // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-	  // gl.useProgram(background.shader());
-	  // background.sendUniformVariables();
-	  // background.draw();
+      // gl.useProgram(background.shader());
+      // background.sendUniformVariables();
+      // background.draw();
 
-	  gl.useProgram(spaceship.shader());
-	  spaceship.sendUniformVariables();
-	  spaceship.draw();
+      gl.useProgram(spaceship.shader());
+      spaceship.sendUniformVariables();
+      spaceship.draw();
 
-	  // test pour afficher un splat quand on appuie sur espace
-	  // activation de la transparence
-	  gl.enable(gl.BLEND);
-	  gl.useProgram(shootSample.shader());
-	  shootSample.sendUniformVariables();
-	  shootSample.draw();
-	  // on desactive la transparence
-	  gl.disable(gl.BLEND);
+      gl.useProgram(cube.shader());
+      cube.sendUniformVariables();
+      cube.draw();
+
+      // test pour afficher un splat quand on appuie sur espace
+      // activation de la transparence
+      gl.enable(gl.BLEND);
+      gl.useProgram(shootSample.shader());
+      shootSample.sendUniformVariables();
+      shootSample.draw();
+      // on desactive la transparence
+      gl.disable(gl.BLEND);
+    }
+
+    // une bonne maniere de gerer les evenements claviers
+    var currentlyPressedKeys = {};
+
+    function handleKeyDown(event) {
+      currentlyPressedKeys[event.keyCode] = true;
+    }
+
+
+    function handleKeyUp(event) {
+      currentlyPressedKeys[event.keyCode] = false;
+    }
+
+    function handleKeys() {
+      if (currentlyPressedKeys[33]) {
+        // Page Up (par exemple)
+        // faire quelque chose...
       }
 
-      // une bonne maniere de gerer les evenements claviers
-      var currentlyPressedKeys = {};
-
-      function handleKeyDown(event) {
-          currentlyPressedKeys[event.keyCode] = true;
+      // vous pouvez utiliser ce genre de fonction
+      // pour faire bouger votre vaisseau
+      if (currentlyPressedKeys[68]) { // D
+        spaceship.move(0, 1);
       }
 
-
-      function handleKeyUp(event) {
-          currentlyPressedKeys[event.keyCode] = false;
+      if (currentlyPressedKeys[81]) { // Q
+        spaceship.move(0, -1);
       }
 
-      function handleKeys() {
-          if (currentlyPressedKeys[33]) {
-              // Page Up (par exemple)
-              // faire quelque chose...
-          }
-
-	  // vous pouvez utiliser ce genre de fonction
-	  // pour faire bouger votre vaisseau
-	  if (currentlyPressedKeys[68]) { // D
-              spaceship.move(0,1);
-          }
-
-	  if (currentlyPressedKeys[81]) { // Q
-              spaceship.move(0,-1);
-          }
-
-	  if (currentlyPressedKeys[90]) { // Z
-              spaceship.move(1,0);
-          }
-
-	  if (currentlyPressedKeys[83]) { // S
-              spaceship.move(-1,0);
-          }
-
-	  if (currentlyPressedKeys[77]) { // M
-	      // just a test to clear a splat
-              shootSample.clear();
-          }
-
-	  if (currentlyPressedKeys[32]) { // SPACE
-	      // just to test how a aplat works
-	      shootSample.setPosition(0,0);
-          }
-
+      if (currentlyPressedKeys[90]) { // Z
+        spaceship.move(1, 0);
       }
 
-      function mouseMove(event) {
-	  // recup evenement souris
-          //var newx = 2.0*(event.clientX/gl.viewportWidth)-1.0;
-          //var newy = -(2.0*(event.clientY/gl.viewportHeight)-1.0);
+      if (currentlyPressedKeys[83]) { // S
+        spaceship.move(-1, 0);
       }
 
-
-      // animation
-      var lastTime = 0;
-      function animate() {
-          var timeNow = new Date().getTime();
-          if (lastTime != 0) {
-              // anime chacun des objets de la scene
-	      // si necessaire (en fonction du temps ecoul�)
-              var elapsed = timeNow - lastTime;
-              heightfield.setParameters(elapsed);
-              spaceship.setParameters(elapsed);
-              background.setParameters(elapsed);
-	      shootSample.setParameters(elapsed);
-
-          }
-          lastTime = timeNow;
+      if (currentlyPressedKeys[77]) { // M
+        // just a test to clear a splat
+        shootSample.clear();
       }
 
-      function tick() {
-          requestAnimFrame(tick);
-          handleKeys();
-          drawScene();
-          animate();
+      if (currentlyPressedKeys[32]) { // SPACE
+        // just to test how a aplat works
+        shootSample.setPosition(0, 0);
       }
 
+    }
 
-      function webGLStart() {
-          // initialisation du canvas et des objets OpenGL
-          var canvas = document.getElementById("SpaceShip");
-          initGL(canvas);
+    function mouseMove(event) {
+      // recup evenement souris
+      //var newx = 2.0*(event.clientX/gl.viewportWidth)-1.0;
+      //var newy = -(2.0*(event.clientY/gl.viewportHeight)-1.0);
+    }
 
-          fbo = new FBO(canvas.width,canvas.height,1,false);
 
-          initHeightfieldShader();
-          initBackgroundShader();
-          initModelShader();
-	  initSplatShader();
+    // animation
+    var lastTime = 0;
 
-          heightfield = new Heightfield();
-          background = new Background(fbo.texture(0));
-          spaceship = new Model('models/plane.obj');
-	  shootSample = new Splat(0);
+    function animate() {
+      var timeNow = new Date().getTime();
+      if (lastTime != 0) {
+        // anime chacun des objets de la scene
+        // si necessaire (en fonction du temps ecoul�)
+        var elapsed = timeNow - lastTime;
+        heightfield.setParameters(elapsed);
+        spaceship.setParameters(elapsed);
+        background.setParameters(elapsed);
+        shootSample.setParameters(elapsed);
 
-          // la couleur de fond sera noire
-          gl.clearColor(0.0, 0.0, 0.0, 1.0);
-
-          // active le teste de profondeur
-          gl.enable(gl.DEPTH_TEST);
-          gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-
-          /* Mouse and keyboard interaction functions */
-          //canvas.addEventListener('mousedown', tbMouseDown, true);
-          //canvas.addEventListener('mousemove', mouseMove, true);
-          //canvas.addEventListener('mouseup', tbMouseUp, true);
-          document.onkeydown = handleKeyDown;
-          document.onkeyup = handleKeyUp;
-
-          // dessine la scene
-          tick();
       }
+      lastTime = timeNow;
+    }
+
+    function tick() {
+      requestAnimFrame(tick);
+      handleKeys();
+      drawScene();
+      animate();
+    }
 
 
-    </script>
+    function webGLStart() {
+      // initialisation du canvas et des objets OpenGL
+      var canvas = document.getElementById("SpaceShip");
+      initGL(canvas);
+
+      fbo = new FBO(canvas.width, canvas.height, 1, false);
+
+      var tex = initTexture('textures/ninja.png');
+
+      initHeightfieldShader();
+      initBackgroundShader();
+      initModelShader();
+      initSplatShader();
+
+      heightfield = new Heightfield();
+      background = new Background(fbo.texture(0));
+      spaceship = new Model('models/plane.obj');
+      cube = new Model('models/bloc.obj');
+      shootSample = new Splat(tex);
+
+      // la couleur de fond sera noire
+      gl.clearColor(0.0, 0.0, 0.0, 1.0);
+
+      // active le teste de profondeur
+      gl.enable(gl.DEPTH_TEST);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+      /* Mouse and keyboard interaction functions */
+      //canvas.addEventListener('mousedown', tbMouseDown, true);
+      //canvas.addEventListener('mousemove', mouseMove, true);
+      //canvas.addEventListener('mouseup', tbMouseUp, true);
+      document.onkeydown = handleKeyDown;
+      document.onkeyup = handleKeyUp;
+
+      // dessine la scene
+      tick();
+    }
+  </script>
 
 
-  </head>
+</head>
 
 
-  <body onload="webGLStart();">
-    <canvas id="SpaceShip" style="border: none;" width="800" height="800"></canvas>
-</body></html>
+<body onload="webGLStart();" style="margin: unset;">
+  <canvas id="SpaceShip" style="border: none;"></canvas>
+  <script>
+    var canvas = document.getElementById('SpaceShip');
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+  </script>
+</body>
+
+</html>

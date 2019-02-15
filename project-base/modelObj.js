@@ -107,7 +107,7 @@ Model.prototype.initParameters = function() {
   //this.projMatrix = mat4.perspective(45.0, 1, 0.1, 30);
 
 
-  this.modelMatrix = mat4.scale(this.modelMatrix, [0.2, 0.2, 0.2]);
+  this.modelMatrix = mat4.scale(this.modelMatrix, [0.15, 0.15, 0.075]);
   this.viewMatrix = mat4.lookAt([0, 10, 0], [0, 0, 0], [-1, 0, 0]);
   this.projMatrix = mat4.perspective(45.0, 1, 0.1, 100);
 }
@@ -117,7 +117,7 @@ Model.prototype.setParameters = function(elapsed) {
 }
 
 Model.prototype.move = function(x, y) {
-  this.viewMatrix = mat4.translate(this.viewMatrix, [-0.1 * x, 0, -0.1 * y]);
+  this.viewMatrix = mat4.translate(this.viewMatrix, [-0.08 * x, 0, -0.08 * y]);
   //this.viewMatrix = mat4.lookAt([-0.1*x,10,-0.1*y],[0, 0, 0], [0, 0, 0])
 }
 
