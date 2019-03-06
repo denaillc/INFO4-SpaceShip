@@ -224,21 +224,25 @@
 
 	  // A DECOMMENTER POUR TRAVAILLER SUR LE FOND
 	  // // creation des hauteurs dans une texture
-	  // gl.bindFramebuffer(gl.FRAMEBUFFER,fbo.id());
+	  gl.bindFramebuffer(gl.FRAMEBUFFER,fbo.id());
 
-	  // gl.useProgram(heightfield.shader());
-	  // heightfield.sendUniformVariables();
-	  // heightfield.draw();
+	  gl.useProgram(heightfield.shader());
+	  heightfield.sendUniformVariables();
+	  heightfield.draw();
 
-	  // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-	  // gl.useProgram(background.shader());
-	  // background.sendUniformVariables();
-	  // background.draw();
+	  gl.useProgram(background.shader());
+	  background.sendUniformVariables();
+	  background.draw();
 
 	  gl.useProgram(spaceship.shader());
 	  spaceship.sendUniformVariables();
-	  spaceship.draw();
+    spaceship.draw();
+    
+	  gl.useProgram(cube.shader());
+	  cube.sendUniformVariables();
+    cube.draw();
 
 	  // test pour afficher un splat quand on appuie sur espace
 	  // activation de la transparence
@@ -271,37 +275,52 @@
 	  // vous pouvez utiliser ce genre de fonction
 	  // pour faire bouger votre vaisseau
 	  if (currentlyPressedKeys[68]) { // D
-              spaceship.move(0,1);
+              spaceship.move(0, 1);
+            }
+            
+            // Q = 81
+            // A = 65
+            if (currentlyPressedKeys[65]) { // Q
+              spaceship.move(0, -1);
+            }
+            
+            // Z = 90
+            // W = 87
+            if (currentlyPressedKeys[87]) { // W
+              spaceship.move(1, 0);
+            }
+            
+            if (currentlyPressedKeys[83]) { // S
+              spaceship.move(-1, 0);
           }
 
-	  if (currentlyPressedKeys[81]) { // Q
-              spaceship.move(0,-1);
-          }
-
-	  if (currentlyPressedKeys[90]) { // Z
-              spaceship.move(1,0);
-          }
-
-	  if (currentlyPressedKeys[83]) { // S
-              spaceship.move(-1,0);
-          }
-
-	  if (currentlyPressedKeys[77]) { // M
-	      // just a test to clear a splat
+	        if (currentlyPressedKeys[77]) { // M
+	            // just a test to clear a splat
               shootSample.clear();
           }
 
-	  if (currentlyPressedKeys[32]) { // SPACE
-	      // just to test how a aplat works
-	      shootSample.setPosition(0,0);
+          if (currentlyPressedKeys[32]) { // SPACE
+              // just to test how a aplat works
+              shootSample.setPosition(0,0);
           }
 
+          // if (cube.bbminP[1] < -1) {
+          //   cube.move(1, 0)
+          // }
       }
 
       function mouseMove(event) {
 	  // recup evenement souris
           //var newx = 2.0*(event.clientX/gl.viewportWidth)-1.0;
           //var newy = -(2.0*(event.clientY/gl.viewportHeight)-1.0);
+      }
+
+      function moveObstacles() {
+        if (cube.bbminP[1] > -1) {
+          cube.move(-.5, 0);
+        } else {
+          cube.move(100, 0);
+        }
       }
 
 
@@ -327,6 +346,7 @@
           handleKeys();
           drawScene();
           animate();
+          moveObstacles();
       }
 
 
@@ -340,12 +360,14 @@
           initHeightfieldShader();
           initBackgroundShader();
           initModelShader();
-	  initSplatShader();
+	        initSplatShader();
 
           heightfield = new Heightfield();
           background = new Background(fbo.texture(0));
           spaceship = new Model('models/plane.obj');
-	  shootSample = new Splat(0);
+          cube = new Model('models/Burning_Cube_by_3DHaupt-(Wavefront OBJ).obj');
+
+	        shootSample = new Splat(0);
 
           // la couleur de fond sera noire
           gl.clearColor(0.0, 0.0, 0.0, 1.0);
