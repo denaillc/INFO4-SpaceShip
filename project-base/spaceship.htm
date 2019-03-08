@@ -213,132 +213,163 @@
       var heightfield;
       var background;
       var spaceship;
+      var buildings;
       var shootSample;
 
       function drawScene() {
-	  // initialisation du viewport
-	  gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+        // initialisation du viewport
+        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 
-	  // efface les buffers de couleur et de profondeur
-	  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        // efface les buffers de couleur et de profondeur
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	  // A DECOMMENTER POUR TRAVAILLER SUR LE FOND
-	  // // creation des hauteurs dans une texture
-	  gl.bindFramebuffer(gl.FRAMEBUFFER,fbo.id());
+        // A DECOMMENTER POUR TRAVAILLER SUR LE FOND
+        // // creation des hauteurs dans une texture
+        gl.bindFramebuffer(gl.FRAMEBUFFER,fbo.id());
 
-	  gl.useProgram(heightfield.shader());
-	  heightfield.sendUniformVariables();
-	  heightfield.draw();
+        gl.useProgram(heightfield.shader());
+        heightfield.sendUniformVariables();
+        heightfield.draw();
 
-	  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-	  gl.useProgram(background.shader());
-	  background.sendUniformVariables();
-	  background.draw();
+        gl.useProgram(background.shader());
+        background.sendUniformVariables();
+        background.draw();
 
-	  gl.useProgram(spaceship.shader());
-	  spaceship.sendUniformVariables();
-    spaceship.draw();
-    
-	  gl.useProgram(cube.shader());
-	  cube.sendUniformVariables();
-    cube.draw();
+        gl.useProgram(spaceship.shader());
+        spaceship.sendUniformVariables();
+        spaceship.draw();
 
-	  // test pour afficher un splat quand on appuie sur espace
-	  // activation de la transparence
-	  gl.enable(gl.BLEND);
-	  gl.useProgram(shootSample.shader());
-	  shootSample.sendUniformVariables();
-	  shootSample.draw();
-	  // on desactive la transparence
-	  gl.disable(gl.BLEND);
+        if (buildings.length) {
+          for (const building of buildings) {
+            gl.useProgram(building.shader());
+            building.sendUniformVariables();
+            building.draw();
+          }
+        }
+
+        // test pour afficher un splat quand on appuie sur espace
+        // activation de la transparence
+        gl.enable(gl.BLEND);
+        gl.useProgram(shootSample.shader());
+        shootSample.sendUniformVariables();
+        shootSample.draw();
+        // on desactive la transparence
+        gl.disable(gl.BLEND);
       }
 
       // une bonne maniere de gerer les evenements claviers
       var currentlyPressedKeys = {};
 
       function handleKeyDown(event) {
-          currentlyPressedKeys[event.keyCode] = true;
+        currentlyPressedKeys[event.keyCode] = true;
       }
-
-
       function handleKeyUp(event) {
-          currentlyPressedKeys[event.keyCode] = false;
+        currentlyPressedKeys[event.keyCode] = false;
       }
-
       function handleKeys() {
-          if (currentlyPressedKeys[33]) {
-              // Page Up (par exemple)
-              // faire quelque chose...
-          }
+        if (currentlyPressedKeys[33]) {
+          // Page Up (par exemple)
+          // faire quelque chose...
+        }
 
-	  // vous pouvez utiliser ce genre de fonction
-	  // pour faire bouger votre vaisseau
-	  if (currentlyPressedKeys[68]) { // D
-              spaceship.move(0, 1);
-            }
-            
-            // Q = 81
-            // A = 65
-            if (currentlyPressedKeys[65]) { // Q
-              spaceship.move(0, -1);
-            }
-            
-            // Z = 90
-            // W = 87
-            if (currentlyPressedKeys[87]) { // W
-              spaceship.move(1, 0);
-            }
-            
-            if (currentlyPressedKeys[83]) { // S
-              spaceship.move(-1, 0);
-          }
-
-	        if (currentlyPressedKeys[77]) { // M
-	            // just a test to clear a splat
-              shootSample.clear();
-          }
-
-          if (currentlyPressedKeys[32]) { // SPACE
-              // just to test how a aplat works
-              shootSample.setPosition(0,0);
-          }
-
-          // if (cube.bbminP[1] < -1) {
-          //   cube.move(1, 0)
-          // }
-      }
-
-      function mouseMove(event) {
-	  // recup evenement souris
-          //var newx = 2.0*(event.clientX/gl.viewportWidth)-1.0;
-          //var newy = -(2.0*(event.clientY/gl.viewportHeight)-1.0);
-      }
-
-      function moveObstacles() {
-        if (cube.bbminP[1] > -1) {
-          cube.move(-.5, 0);
-        } else {
-          cube.move(100, 0);
+        // vous pouvez utiliser ce genre de fonction
+        // pour faire bouger votre vaisseau
+        if (currentlyPressedKeys[68]) { // D
+          spaceship.move(0, 1);
+        }
+        // Q = 81
+        // A = 65
+        if (currentlyPressedKeys[65]) { // Q
+          spaceship.move(0, -1);
+        }
+        // Z = 90
+        // W = 87
+        if (currentlyPressedKeys[87]) { // W
+          spaceship.move(1, 0);
+        }
+        if (currentlyPressedKeys[83]) { // S
+          spaceship.move(-1, 0);
+        }
+	      if (currentlyPressedKeys[77]) { // M
+	          // just a test to clear a splat
+            // shootSample.clear();
+        }
+        if (currentlyPressedKeys[32]) { // SPACE
+            // just to test how a aplat works
+            shootSample.setPosition(0,0);
         }
       }
 
+      function mouseMove(event) {
+        // recup evenement souris
+        //var newx = 2.0*(event.clientX/gl.viewportWidth)-1.0;
+        //var newy = -(2.0*(event.clientY/gl.viewportHeight)-1.0);
+      }
 
       // animation
+
+      function randomIntFromInterval(min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min);
+      }
+
+      function randomPositionFromCurrent(currentPosition) {
+        // Find a wait to establish a move that will set the cube position between [-1, 1], depending on the current position
+        const pos = randomIntFromInterval(Math.floor((-1 - currentPosition)), Math.floor((1 - currentPosition)));
+        console.log(pos);
+        return pos;
+      }
+
       var lastTime = 0;
       function animate() {
           var timeNow = new Date().getTime();
           if (lastTime != 0) {
-              // anime chacun des objets de la scene
-	      // si necessaire (en fonction du temps ecoul�)
-              var elapsed = timeNow - lastTime;
-              heightfield.setParameters(elapsed);
-              spaceship.setParameters(elapsed);
-              background.setParameters(elapsed);
-	      shootSample.setParameters(elapsed);
 
+            // anime chacun des objets de la scene
+	          // si necessaire (en fonction du temps ecoul�)
+            var elapsed = timeNow - lastTime;
+            heightfield.setParameters(elapsed);
+            spaceship.setParameters(elapsed);
+            background.setParameters(elapsed);
+            shootSample.setParameters(elapsed);
+
+            if (buildings.length) {
+              for (const building of buildings) {
+                if (building.viewMatrix) {
+                  if (building.bbminP[1] > -1) {
+                    building.move(-1, 0);
+                  } else {
+                    // building.move(100, 0);
+                  
+                    const topMove = 100;
+                    building.move(topMove, randomPositionFromCurrent(building.bbminP[0]));
+                  }
+                }
+                building.setParameters(elapsed);
+              }
+            }
           }
           lastTime = timeNow;
+      }
+
+      function moveObstacles() {
+          // if (cube.viewMatrix) {
+          //   if (cube.bbminP[1] > -1) {
+          //     cube.move(-1,0);
+          //   } else {
+          //     cube.move(100,0);
+          //   }
+          // }
+        }
+
+      function pushBuilding(buildingsContainer) {
+        buildingsContainer.push(new Model('models/bloc.obj'));
+        if (buildingsContainer.length < 2) {
+          setTimeout(() => {
+            pushBuilding(buildings);
+          }, 1500);
+        }
       }
 
       function tick() {
@@ -348,7 +379,6 @@
           animate();
           moveObstacles();
       }
-
 
       function webGLStart() {
           // initialisation du canvas et des objets OpenGL
@@ -365,7 +395,9 @@
           heightfield = new Heightfield();
           background = new Background(fbo.texture(0));
           spaceship = new Model('models/plane.obj');
-          cube = new Model('models/Burning_Cube_by_3DHaupt-(Wavefront OBJ).obj');
+          buildings = Array();
+          pushBuilding(buildings);
+          // setTimeout(pushBuilding(buildings), 10000);
 
 	        shootSample = new Splat(0);
 

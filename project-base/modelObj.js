@@ -101,11 +101,6 @@ Model.prototype.initParameters = function() {
   this.viewMatrix = mat4.identity();
   this.projMatrix = mat4.identity();
 
-  this.inRotation = false;
-  this.position = [0,0,0];
-  this.rotation = 0.;
-  this.test = 0.;
-
   // trouver les model/view/proj matrices pour voir l'objet comme vous le souhaitez
   //this.modelMatrix = mat4.scale(this.modelMatrix, [0.2, 0.2, 0.2]);
   //this.viewMatrix = mat4.lookAt([0, 10, 0], [0, 0, 0], [-1, 0, 0]);
@@ -118,13 +113,7 @@ Model.prototype.initParameters = function() {
 }
 
 Model.prototype.setParameters = function(elapsed) {
-  this.test += 0.01;
-  this.position[2] = 0.5*(Math.sin(this.test)*0.5+0.5);
-  var rMat = mat4.create();
-  var tMat = mat4.create();
-  mat4.rotate(mat4.identity(), this.rotation, [1,0,0], rMat);
-  mat4.translate(mat4.identity(), [this.position[0], this.position[2], this.position[1]], tMat);
-  mat4.multiply(tMat, rMat, this.currentTransform);
+  
 }
 
 Model.prototype.move = function(x, y) {
