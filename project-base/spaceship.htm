@@ -281,19 +281,19 @@
       // vous pouvez utiliser ce genre de fonction
       // pour faire bouger votre vaisseau
       if (currentlyPressedKeys[68]) { // D
-        spaceship.move(0, 1);
-      }
-
-      if (currentlyPressedKeys[81]) { // Q
         spaceship.move(0, -1);
       }
 
+      if (currentlyPressedKeys[81]) { // Q
+        spaceship.move(0, 1);
+      }
+
       if (currentlyPressedKeys[90]) { // Z
-        spaceship.move(1, 0);
+        spaceship.move(-1, 0);
       }
 
       if (currentlyPressedKeys[83]) { // S
-        spaceship.move(-1, 0);
+        spaceship.move(1, 0);
       }
 
       if (currentlyPressedKeys[77]) { // M

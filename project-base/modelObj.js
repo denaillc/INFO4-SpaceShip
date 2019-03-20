@@ -101,11 +101,15 @@ Model.prototype.initParameters = function() {
   this.viewMatrix = mat4.identity();
   this.projMatrix = mat4.identity();
 
+  this.position = [0, 0, 0];
+  this.rotation = 0;
+
   // trouver les model/view/proj matrices pour voir l'objet comme vous le souhaitez
   //this.modelMatrix = mat4.scale(this.modelMatrix, [0.2, 0.2, 0.2]);
   //this.viewMatrix = mat4.lookAt([0, 10, 0], [0, 0, 0], [-1, 0, 0]);
   //this.projMatrix = mat4.perspective(45.0, 1, 0.1, 30);
 
+  this.test = 0;
 
   this.modelMatrix = mat4.scale(this.modelMatrix, [0.15, 0.15, 0.075]);
   this.viewMatrix = mat4.lookAt([0, 10, 0], [0, 0, 0], [-1, 0, 0]);
@@ -113,12 +117,23 @@ Model.prototype.initParameters = function() {
 }
 
 Model.prototype.setParameters = function(elapsed) {
-  // on pourrait animer des choses ici
+  this.test += 0.01;
+  this.rotation = 0.5 * (Math.sin(this.test) * 0.5);
+  var rMat = mat4.create();
+  var tMat = mat4.create();
+  mat4.rotate(mat4.identity(), this.rotation, [1, 0, 0], rMat);
+  mat4.translate(mat4.identity(), [this.position[0], this.position[2], this.position[1]], tMat);
+  mat4.multiply(tMat, rMat, this.currentTransform);
 }
 
 Model.prototype.move = function(x, y) {
-  this.viewMatrix = mat4.translate(this.viewMatrix, [-0.08 * x, 0, -0.08 * y]);
-  //this.viewMatrix = mat4.lookAt([-0.1*x,10,-0.1*y],[0, 0, 0], [0, 0, 0])
+  var movex = this.position[0] + x * 0.1;
+  var movey = this.position[1] + y * 0.1;
+  valueperspective = 1.0*(45-10)/10;
+  if (movex <= valueperspective && movex >= -valueperspective && movey <= valueperspective && movey >= -valueperspective) {
+    this.position[0] = movex;
+    this.position[1] = movey;
+  }
 }
 
 Model.prototype.setPosition = function(x, y) {
@@ -209,6 +224,9 @@ Model.prototype.load = function(filename) {
           if (parts.length > 0) {
             switch (parts[0]) {
               case 'v':
+                Model.prototype.turn = function(x) {
+                  this.rotation = this.rotation + x;
+                }
                 positions.push(
                   vec3.create([
                     parseFloat(parts[1]),
