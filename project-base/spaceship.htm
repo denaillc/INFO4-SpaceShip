@@ -391,9 +391,9 @@
           // }
         }
 
-      function pushBuilding(buildingsContainer) {
+      function pushBuilding(buildingsContainer, buildingsCount) {
         buildingsContainer.push(new Model('models/bloc.obj'));
-        if (buildingsContainer.length < 1) {
+        if (buildingsContainer.length < buildingsCount) {
           setTimeout(() => {
             pushBuilding(buildings);
           }, 1500);
@@ -424,8 +424,14 @@
           heightfield = new Heightfield();
           background = new Background(fbo.texture(0));
           spaceship = new Model('models/plane.obj');
+          
           buildings = Array();
-          pushBuilding(buildings);
+
+          // Handle max projectiles parameter
+          const defaultMaxProjectiles = 2;
+          maxProjectiles = parseInt(document.getElementById('max-projectiles').value);
+          maxProjectiles = isNaN(maxProjectiles) ? defaultMaxProjectiles : maxProjectiles;
+          pushBuilding(buildings, maxProjectiles);
           // setTimeout(pushBuilding(buildings), 10000);
 
 	        shootSample = new Splat(0);
@@ -444,6 +450,7 @@
           document.onkeydown = handleKeyDown;
           document.onkeyup = handleKeyUp;
 
+          canvas.style.display = 'block';
           // dessine la scene
           tick();
       }
@@ -454,7 +461,15 @@
 
   </head>
 
-
-  <body onload="webGLStart();">
-    <canvas id="SpaceShip" style="border: none;" width="800" height="800"></canvas>
+  <!-- onload="webGLStart();" -->
+  <body>
+    <form>
+      <fieldset>
+        <legend>Game configuration</legend>
+        <label for="max-projectiles">Max projectiles:</label>
+        <input type="number" name="max-projectiles" id="max-projectiles" value="2" />
+       </fieldset>
+       <button type="button" onclick="webGLStart()">Play</button>
+    </form>
+    <canvas id="SpaceShip" style="display: none; border: none;" width="800" height="800"></canvas>
 </body></html>
