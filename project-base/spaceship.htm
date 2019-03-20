@@ -323,10 +323,37 @@
         return nextPosition;
       }
 
+      function moveObstacles() {
+        if (cube.bbminP[1] > -1) {
+          cube.move(0.5,0);
+        } else {
+          cube.move(100,0);
+        }
+      }
+
+      function collision() {
+        for (const building of buildings) {
+          if (
+            (building.bbminP[1] > spaceship.bbminP[1]-0.4 && building.bbminP[1] < spaceship.bbminP[1]+0.4) && 
+            (building.bbminP[0] > spaceship.bbminP[0]-0.5 && building.bbminP[0] < spaceship.bbminP[0]+0.5)
+            ) {
+            console.log("COLLISION");
+          }
+        }
+      }
+
+      // animation
       var lastTime = 0;
       function animate() {
           var timeNow = new Date().getTime();
           if (lastTime != 0) {
+        // anime chacun des objets de la scene
+	      // si necessaire (en fonction du temps ecoul�)
+            var elapsed = timeNow - lastTime;
+            heightfield.setParameters(elapsed);
+            spaceship.setParameters(elapsed);
+            background.setParameters(elapsed);
+	          shootSample.setParameters(elapsed);
 
             // anime chacun des objets de la scene
 	          // si necessaire (en fonction du temps ecoul�)
@@ -379,6 +406,7 @@
           drawScene();
           animate();
           moveObstacles();
+          collision();
       }
 
       function webGLStart() {
