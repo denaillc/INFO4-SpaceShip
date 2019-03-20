@@ -225,7 +225,7 @@
 
 	  // A DECOMMENTER POUR TRAVAILLER SUR LE FOND
 	  // // creation des hauteurs dans une texture
-	  // gl.bindFramebuffer(gl.FRAMEBUFFER,fbo.id());
+	  //  gl.bindFramebuffer(gl.FRAMEBUFFER,fbo.id());
 
 	  // gl.useProgram(heightfield.shader());
 	  // heightfield.sendUniformVariables();
@@ -275,22 +275,20 @@
 
       	  // vous pouvez utiliser ce genre de fonction
       	  // pour faire bouger votre vaisseau
-      	  if (currentlyPressedKeys[68]) { // D
+      	  if (currentlyPressedKeys[81]) { // D
                     spaceship.move(0,1);
                 }
 
-      	  if (currentlyPressedKeys[81]) { // Q
+      	  if (currentlyPressedKeys[68]) { // Q
                     spaceship.move(0,-1);
                 }
 
-      	  if (currentlyPressedKeys[90]) { // Z
+      	  if (currentlyPressedKeys[83]) { // Z
                     spaceship.move(1,0);
                 }
 
-      	  if (currentlyPressedKeys[83]) { // S
+      	  if (currentlyPressedKeys[90]) { // S
                     spaceship.move(-1,0);
-                    console.log(cube.getBBox());
-
                 }
 
       	  if (currentlyPressedKeys[77]) { // M
@@ -312,13 +310,18 @@
       }
 
       function moveObstacles() {
-          if (cube.bbminP[1] > -1) {
-            cube.move(-1,0);
-          } else {
-            cube.move(100,0);
-
-          }
+        if (cube.bbminP[1] > -1) {
+          cube.move(0.5,0);
+        } else {
+          cube.move(100,0);
         }
+      }
+
+      function collision() {
+        if ((cube.bbminP[1] > spaceship.bbminP[1]-0.4 && cube.bbminP[1] < spaceship.bbminP[1]+0.4) && (cube.bbminP[0] > spaceship.bbminP[0]-0.5 && cube.bbminP[0] < spaceship.bbminP[0]+0.5)) {
+          console.log("COLLISION");
+        }
+      }
 
       // animation
       var lastTime = 0;
@@ -343,6 +346,7 @@
           drawScene();
           animate();
           moveObstacles();
+          collision();
       }
 
 
