@@ -314,11 +314,13 @@
         return Math.floor(Math.random() * (max - min + 1) + min);
       }
 
+      const tolerance = 40;
       function randomPositionFromCurrent(currentPosition) {
-        // Find a wait to establish a move that will set the cube position between [-1, 1], depending on the current position
-        const pos = randomIntFromInterval(Math.floor((-1 - currentPosition)), Math.floor((1 - currentPosition)));
-        console.log(pos);
-        return pos;
+        currentPosition *= 100;
+        const leftTolerance = (- tolerance - currentPosition);
+        const rightTolerance = (tolerance - currentPosition);
+        const nextPosition = randomIntFromInterval(leftTolerance, rightTolerance);
+        return nextPosition;
       }
 
       var lastTime = 0;
@@ -340,10 +342,9 @@
                   if (building.bbminP[1] > -1) {
                     building.move(-1, 0);
                   } else {
-                    // building.move(100, 0);
-                  
                     const topMove = 100;
-                    building.move(topMove, randomPositionFromCurrent(building.bbminP[0]));
+                    building.move(topMove, -building.bbminP[0] * 50);
+                    building.move(0, randomIntFromInterval(-20, 20));
                   }
                 }
                 building.setParameters(elapsed);
@@ -365,7 +366,7 @@
 
       function pushBuilding(buildingsContainer) {
         buildingsContainer.push(new Model('models/bloc.obj'));
-        if (buildingsContainer.length < 2) {
+        if (buildingsContainer.length < 1) {
           setTimeout(() => {
             pushBuilding(buildings);
           }, 1500);
