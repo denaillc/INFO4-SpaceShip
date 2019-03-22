@@ -117,7 +117,7 @@ Model.prototype.initParameters = function () {
 
 Model.prototype.setParameters = function (elapsed) {
     this.test += 0.01;
-    this.rotation = this.rotation;
+    this.rotation = this.turn(0,0);
     var rMat = mat4.create();
     var tMat=mat4.create();
     mat4.rotate(mat4.identity(),this.rotation,[1,0,0], rMat);
@@ -132,23 +132,24 @@ Model.prototype.move = function (x, y) {
     this.position[1]=this.position[1]+y*0.1;
 }
 Model.prototype.turn=function(q,d){
-    if (d===1 && this.rotation>=-Math.PI/4) {
-        this.rotation = this.rotation - 0.1;
+    if (d===1 && this.rotation-0.15>=-Math.PI/4) {
+        this.rotation = this.rotation - 0.15;
     }
-    if (q===1&& this.rotation<=Math.PI/4) {
-        this.rotation = this.rotation + 0.1;
+    if (q===1&& this.rotation+0.15<=Math.PI/4) {
+        this.rotation = this.rotation + 0.15;
     }
-   /* if ( q===0&& d===0) {
+    if ( q===0&& d===0) {
+        if (!currentlyPressedKeys[68]&& !currentlyPressedKeys[81]) {
 
-        if(this.rotation >=-Math.PI/4 && this.rotation<0) {
-            this.rotation+=0.1;
+            if (this.rotation >= -Math.PI / 4 && this.rotation < 0) {
+                this.rotation += 0.05;
+            }
+            if (this.rotation <= Math.PI / 4 && this.rotation > 0) {
+                this.rotation -= 0.05;
+            }
         }
-        if(this.rotation <=Math.PI/4 && this.rotation>0) {
-            this.rotation-=0.1;
-        }
-
        return this.rotation;
-    }*/
+    }
 }
 
 Model.prototype.setPosition = function (x, y) {
