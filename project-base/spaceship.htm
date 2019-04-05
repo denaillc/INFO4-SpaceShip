@@ -224,7 +224,6 @@
     var background;
     var spaceship;
     var buildings;
-    var shootSample;
     var score = 0;
 
     function drawScene() {
@@ -260,12 +259,6 @@
         }
       }
 
-      // test pour afficher un splat quand on appuie sur espace
-      // activation de la transparence
-      gl.enable(gl.BLEND);
-      gl.useProgram(shootSample.shader());
-      shootSample.sendUniformVariables();
-      shootSample.draw();
       // on desactive la transparence
       gl.disable(gl.BLEND);
     }
@@ -317,11 +310,6 @@
       }
       if (currentlyPressedKeys[77]) { // M
         // just a test to clear a splat
-        // shootSample.clear();
-      }
-      if (currentlyPressedKeys[32]) { // SPACE
-        // just to test how a aplat works
-        shootSample.setPosition(0, 0);
       }
     }
 
@@ -371,7 +359,6 @@
         heightfield.setParameters(elapsed);
         spaceship.setParameters(elapsed);
         background.setParameters(elapsed);
-        shootSample.setParameters(elapsed);
 
         // anime chacun des objets de la scene
         // si necessaire (en fonction du temps ecoul�)
@@ -379,7 +366,6 @@
         heightfield.setParameters(elapsed);
         spaceship.setParameters(elapsed);
         background.setParameters(elapsed);
-        shootSample.setParameters(elapsed);
 
         setTimeout(() => {
           if (buildings.length) {
@@ -389,8 +375,8 @@
                   building.move(1, 0);
                 } else {
                   const topMove = -100;
-                  building.move(topMove, -building.bbminP[0] * 50);
-                  building.move(0, randomIntFromInterval(-20, 20));
+                  building.move(topMove, building.bbminP[0]);
+                  building.move(0, randomIntFromInterval(-30, 30));
                 }
               }
               building.setParameters(elapsed);
@@ -444,7 +430,6 @@
       setTimeout(() => {
         pushBuilding(buildings);
       }, 15000);
-      shootSample = new Splat(0);
 
       // la couleur de fond sera noire
       gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -457,7 +442,6 @@
       heightfield = new Heightfield();
       background = new Background(fbo.texture(0));
       spaceship = new Model('models/plane.obj');
-      shootSample = new Splat(0);
 
       canvas.style.display = 'block';
       // dessine la scene
