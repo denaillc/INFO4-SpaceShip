@@ -225,6 +225,7 @@
     var spaceship;
     var buildings;
     var shootSample;
+    var score = 0;
 
     function drawScene() {
       // initialisation du viewport
@@ -345,20 +346,21 @@
       return nextPosition;
     }
 
+    // animation
+    var lastTime = 0;
 
     function collision() {
       for (const building of buildings) {
         if (
-          (building.bbminP[1] > spaceship.bbminP[1] - 0.4 && building.bbminP[1] < spaceship.bbminP[1] + 0.4) &&
-          (building.bbminP[0] > spaceship.bbminP[0] - 0.5 && building.bbminP[0] < spaceship.bbminP[0] + 0.5)
+          (building.bbminP[1] > spaceship.bbminP[1] - 0.1 && building.bbminP[1] < spaceship.bbminP[1] + 0.1) &&
+          (building.bbminP[0] > spaceship.bbminP[0] - 0.15 && building.bbminP[0] < spaceship.bbminP[0] + 0.15)
         ) {
           console.log("COLLISION");
+          alert("GAME OVER\nSCORE : " + score);
+          document.location.reload(true);
         }
       }
     }
-
-    // animation
-    var lastTime = 0;
 
     function animate() {
       var timeNow = new Date().getTime();
@@ -379,20 +381,22 @@
         background.setParameters(elapsed);
         shootSample.setParameters(elapsed);
 
-        if (buildings.length) {
-          for (const building of buildings) {
-            if (building.viewMatrix) {
-              if (building.bbminP[1] > -1) {
-                building.move(1, 0);
-              } else {
-                const topMove = -100;
-                building.move(topMove, -building.bbminP[0] * 50);
-                building.move(0, randomIntFromInterval(-20, 20));
+        setTimeout(() => {
+          if (buildings.length) {
+            for (const building of buildings) {
+              if (building.viewMatrix) {
+                if (building.bbminP[1] > -1) {
+                  building.move(1, 0);
+                } else {
+                  const topMove = -100;
+                  building.move(topMove, -building.bbminP[0] * 50);
+                  building.move(0, randomIntFromInterval(-20, 20));
+                }
               }
+              building.setParameters(elapsed);
             }
-            building.setParameters(elapsed);
           }
-        }
+        }, 15000);
       }
       lastTime = timeNow;
     }
@@ -413,6 +417,7 @@
       drawScene();
       animate();
       collision();
+      score += 1;
     }
 
     function webGLStart() {
@@ -436,9 +441,9 @@
       const defaultMaxProjectiles = 2;
       maxProjectiles = parseInt(document.getElementById('max-projectiles').value);
       maxProjectiles = isNaN(maxProjectiles) ? defaultMaxProjectiles : maxProjectiles;
-      pushBuilding(buildings, maxProjectiles);
-      // setTimeout(pushBuilding(buildings), 10000);
-
+      setTimeout(() => {
+        pushBuilding(buildings);
+      }, 15000);
       shootSample = new Splat(0);
 
       // la couleur de fond sera noire
