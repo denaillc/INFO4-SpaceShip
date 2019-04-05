@@ -382,17 +382,18 @@
               building.setParameters(elapsed);
             }
           }
-        }, 15000);
+        });
       }
       lastTime = timeNow;
     }
 
 
     function pushBuilding(buildingsContainer, buildingsCount) {
-      buildingsContainer.push(new Model('models/bloc.obj'));
+      const building = new Model('models/bloc.obj');
+      buildingsContainer.push(building);
       if (buildingsContainer.length < buildingsCount) {
         setTimeout(() => {
-          pushBuilding(buildings);
+          pushBuilding(buildings, buildingsCount);
         }, 1500);
       }
     }
@@ -428,20 +429,8 @@
       maxProjectiles = parseInt(document.getElementById('max-projectiles').value);
       maxProjectiles = isNaN(maxProjectiles) ? defaultMaxProjectiles : maxProjectiles;
       setTimeout(() => {
-        pushBuilding(buildings);
-      }, 15000);
-
-      // la couleur de fond sera noire
-      gl.clearColor(0.0, 0.0, 0.0, 1.0);
-
-      initHeightfieldShader();
-      initBackgroundShader();
-      initModelShader();
-      initSplatShader();
-
-      heightfield = new Heightfield();
-      background = new Background(fbo.texture(0));
-      spaceship = new Model('models/plane.obj');
+        pushBuilding(buildings, maxProjectiles);
+      }, 10000);
 
       canvas.style.display = 'block';
       // dessine la scene
